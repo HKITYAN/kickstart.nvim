@@ -149,6 +149,7 @@ vim.o.splitbelow = true
 --   and `:help lua-guide-options`
 vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.fillchars = { eob = ' ' }
 
 -- Preview substitutions live, as you type!
 vim.o.inccommand = 'split'
@@ -170,6 +171,10 @@ vim.o.confirm = true
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- Comment toggle with Cmd+/ (iTerm2 sends Cmd+/ as escape sequence \e[/)
+vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true })  -- [J] Cmd+/: Toggle comment (line)
+vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })   -- [J] Cmd+/: Toggle comment (selection)
 
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
@@ -207,10 +212,8 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<S-D-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })   -- [J] Shift+Command+Left: Move focus to the left window (iTerm2: Profiles > Keys, Send Escape Sequence [1;10D)
+vim.keymap.set('n', '<S-D-Right>', '<C-w><C-l>', { desc = 'Move focus to the right window' })  -- [J] Shift+Command+Right: Move focus to the right window (iTerm2: Profiles > Keys, Send Escape Sequence [1;10C)
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -602,7 +605,7 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -933,7 +936,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`

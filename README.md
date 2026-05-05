@@ -42,6 +42,10 @@ External Requirements:
   - If you want to write Golang, you will need `go`
   - etc.
 
+### Required Dependencies [J]
+
+- [ripgrep](https://github.com/BurntSushi/ripgrep#installation) — used by Telescope for live grep (`<leader>sg`) and word search (`<leader>sw`). Without it, project-wide text search will not work.
+
 > [!NOTE]
 > See [Install Recipes](#Install-Recipes) for additional Windows and Linux specific notes
 > and quick install snippets
