@@ -18,10 +18,27 @@ return {
   ---@module 'neo-tree'
   ---@type neotree.Config
   opts = {
+    git_status_async = false,
     filesystem = {
+      filtered_items = {
+        visible = true,
+      },
       window = {
         mappings = {
           ['\\'] = 'close_window',
+        },
+      },
+    },
+    default_component_configs = {
+      git_status = {
+        symbols = {
+          modified  = '',
+          renamed   = '',
+          untracked = '',
+          ignored   = '',
+          unstaged  = '',
+          staged    = '',
+          conflict  = '',
         },
       },
     },
