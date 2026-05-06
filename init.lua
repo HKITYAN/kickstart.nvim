@@ -157,6 +157,36 @@ vim.o.inccommand = 'split'
 -- Show which line your cursor is on
 vim.o.cursorline = true
 
+-- [J] IDE-like config
+-- Layout
+vim.o.laststatus = 3       -- Global statusline: one shared bar at the bottom for all panes (git branch shows once, not per-pane)
+vim.o.winbar = ' %t'       -- Winbar: file name at top of each pane
+-- Navigation (iTerm2 Global: Settings > Keys > Key Bindings)
+vim.keymap.set('n', '<S-D-L>', '<cmd>vsplit<CR>')                                               -- Shift+Cmd+L: Vertical split
+vim.keymap.set('n', '<S-D-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })    -- Shift+Cmd+Left
+vim.keymap.set('n', '<S-D-Right>', '<C-w><C-l>', { desc = 'Move focus to the right window' })  -- Shift+Cmd+Right
+vim.keymap.set('n', '<D-Left>', '<cmd>BufferLineCyclePrev<CR>')                                  -- Cmd+Left: Previous tab
+vim.keymap.set('n', '<D-Right>', '<cmd>BufferLineCycleNext<CR>')                                 -- Cmd+Right: Next tab
+vim.keymap.set('n', '<D-f>', '<cmd>Telescope find_files<CR>')                                    -- Cmd+F: Search files
+-- LSP (iTerm2 Global: Settings > Keys > Key Bindings)
+vim.keymap.set('n', '<D-b>', 'grr', { remap = true })                                            -- Cmd+B: Go to references (same as grr)
+vim.keymap.set('n', '<D-u>', 'gri', { remap = true })                                           -- Cmd+U: Go to implementation (same as gri)
+vim.keymap.set('n', '<D-i>', 'grd', { remap = true })                                           -- Cmd+I: Go to definition (same as grd)
+vim.keymap.set('n', '<S-C-Down>', 'gO', { remap = true })                                        -- Shift+Ctrl+Down: Document symbols (gO) — no iTerm2 mapping needed (Shift+Ctrl is a standard terminal modifier)
+-- Editing (iTerm2 Global: Settings > Keys > Key Bindings)
+vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true }) -- Cmd+/: Toggle comment
+vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })  -- Cmd+/: Toggle comment selection
+-- Auto-save: write after 2 seconds of idle (like VS Code afterDelay)
+vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+  group = vim.api.nvim_create_augroup('j-autosave', { clear = true }),
+  callback = function()
+    if vim.bo.modified and vim.bo.buftype == '' and vim.fn.expand('%') ~= '' then
+      vim.cmd('silent! write')
+    end
+  end,
+})
+-- [J] End IDE-like config
+
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
 
@@ -172,9 +202,6 @@ vim.o.confirm = true
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
--- Comment toggle with Cmd+/ (iTerm2 sends Cmd+/ as escape sequence \e[/)
-vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true })  -- [J] Cmd+/: Toggle comment (line)
-vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })   -- [J] Cmd+/: Toggle comment (selection)
 
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
@@ -212,8 +239,6 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<S-D-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })   -- [J] Shift+Command+Left: Move focus to the left window (iTerm2: Profiles > Keys, Send Escape Sequence [1;10D)
-vim.keymap.set('n', '<S-D-Right>', '<C-w><C-l>', { desc = 'Move focus to the right window' })  -- [J] Shift+Command+Right: Move focus to the right window (iTerm2: Profiles > Keys, Send Escape Sequence [1;10C)
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -612,7 +637,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
 
         stylua = {}, -- Used to format Lua code
 
@@ -655,7 +680,7 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        -- You can add other tools here that you want Mason to install
+        'prettier',
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -703,7 +728,10 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -852,6 +880,7 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -868,6 +897,28 @@ require('lazy').setup({
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
     end,
+  },
+
+  -- [J] IDE-like tab bar
+  {
+    'akinsho/bufferline.nvim',
+    version = '*',
+    event = 'VimEnter',
+    opts = {
+      options = {
+        close_command = 'bdelete! %d',
+        diagnostics = 'nvim_lsp',
+        offsets = {
+          { filetype = 'neo-tree', text = '', separator = true },
+        },
+        show_close_icon = false,
+        custom_filter = function(buf)
+          return vim.fn.bufname(buf) ~= ''
+        end,
+        separator_style = 'thin',
+        modified_icon = '',
+      },
+    },
   },
 
   { -- Highlight, edit, and navigate code
