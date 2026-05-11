@@ -161,19 +161,21 @@ vim.o.cursorline = true
 -- Layout
 vim.o.laststatus = 3       -- Global statusline: one shared bar at the bottom for all panes (git branch shows once, not per-pane)
 vim.o.winbar = ' %t'       -- Winbar: file name at top of each pane
--- Navigation (iTerm2 Global: Settings > Keys > Key Bindings)
+-- Navigation (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<S-D-L>', '<cmd>vsplit<CR>')                                               -- Shift+Cmd+L: Vertical split
 vim.keymap.set('n', '<S-D-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })    -- Shift+Cmd+Left
 vim.keymap.set('n', '<S-D-Right>', '<C-w><C-l>', { desc = 'Move focus to the right window' })  -- Shift+Cmd+Right
 vim.keymap.set('n', '<D-Left>', '<cmd>BufferLineCyclePrev<CR>')                                  -- Cmd+Left: Previous tab
 vim.keymap.set('n', '<D-Right>', '<cmd>BufferLineCycleNext<CR>')                                 -- Cmd+Right: Next tab
-vim.keymap.set('n', '<D-f>', '<cmd>Telescope find_files<CR>')                                    -- Cmd+F: Search files
--- LSP (iTerm2 Global: Settings > Keys > Key Bindings)
+vim.keymap.set('n', '<D-o>', '<cmd>Telescope lsp_workspace_symbols symbols=class<CR>')             -- Cmd+O: Go to class (workspace symbols)
+vim.keymap.set('n', '<S-D-O>', '<cmd>Telescope find_files<CR>')                                   -- Shift+Cmd+O: Search files by name
+vim.keymap.set('n', '<S-D-F>', '<cmd>Telescope live_grep<CR>')                                    -- Shift+Cmd+F: Search keywords in project (live grep)
+-- LSP (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<D-b>', 'grr', { remap = true })                                            -- Cmd+B: Go to references (same as grr)
 vim.keymap.set('n', '<D-u>', 'gri', { remap = true })                                           -- Cmd+U: Go to implementation (same as gri)
-vim.keymap.set('n', '<D-i>', 'grd', { remap = true })                                           -- Cmd+I: Go to definition (same as grd)
-vim.keymap.set('n', '<S-C-Down>', 'gO', { remap = true })                                        -- Shift+Ctrl+Down: Document symbols (gO) — no iTerm2 mapping needed (Shift+Ctrl is a standard terminal modifier)
--- Editing (iTerm2 Global: Settings > Keys > Key Bindings)
+vim.keymap.set('n', '<S-D-I>', 'grd', { remap = true })                                          -- Shift+Cmd+I: Go to definition (same as grd)
+vim.keymap.set('n', '<S-C-Down>', '<cmd>Telescope lsp_document_symbols symbols=function,method<CR>')      -- Shift+Ctrl+Down: Document functions/methods — no iTerm2 mapping needed (standard terminal modifier)
+-- Editing (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true }) -- Cmd+/: Toggle comment
 vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })  -- Cmd+/: Toggle comment selection
 -- Auto-save: write after 2 seconds of idle (like VS Code afterDelay)
