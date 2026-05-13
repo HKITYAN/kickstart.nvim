@@ -158,6 +158,20 @@ vim.o.inccommand = 'split'
 vim.o.cursorline = true
 
 -- [J] IDE-like config
+-- Gitsigns colors (brighter than tokyonight defaults)
+local function set_gitsigns_colors()
+  vim.api.nvim_set_hl(0, 'GitSignsAdd', { fg = '#afff2e' })          -- bright green
+  vim.api.nvim_set_hl(0, 'GitSignsChange', { fg = '#bb9af7' })       -- purple
+  vim.api.nvim_set_hl(0, 'GitSignsDelete', { fg = '#f70707' })       -- red
+  vim.api.nvim_set_hl(0, 'GitSignsAddInline', { bg = '#afff2e' })    -- bright green bg for added words
+  vim.api.nvim_set_hl(0, 'GitSignsDeleteInline', { bg = '#f70707' }) -- red bg for deleted words
+  vim.api.nvim_set_hl(0, 'GitSignsChangeInline', { bg = '#bb9af7' }) -- purple bg for changed words
+end
+set_gitsigns_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+  group = vim.api.nvim_create_augroup('j-gitsigns-colors', { clear = true }),
+  callback = set_gitsigns_colors,
+})
 -- Layout
 vim.o.laststatus = 3       -- Global statusline: one shared bar at the bottom for all panes (git branch shows once, not per-pane)
 vim.o.winbar = ' %t'       -- Winbar: file name at top of each pane
@@ -175,6 +189,17 @@ vim.keymap.set('n', '<D-b>', 'grr', { remap = true })                           
 vim.keymap.set('n', '<D-u>', 'gri', { remap = true })                                           -- Cmd+U: Go to implementation (same as gri)
 vim.keymap.set('n', '<S-D-I>', 'grd', { remap = true })                                          -- Shift+Cmd+I: Go to definition (same as grd)
 vim.keymap.set('n', '<S-C-Down>', '<cmd>Telescope lsp_document_symbols symbols=function,method<CR>')      -- Shift+Ctrl+Down: Document functions/methods — no iTerm2 mapping needed (standard terminal modifier)
+-- Git (gitsigns)
+vim.keymap.set('n', '<D-g>', function()                                                           -- Cmd+G: Toggle diff against last commit (iTerm2 Profile: remote-nvim)
+  if vim.wo.diff then
+    vim.cmd('wincmd p | q')
+  else
+    require('gitsigns').diffthis('@')
+  end
+end)
+-- Git navigation (gitsigns) — no iTerm2 mapping needed (standard terminal modifier)
+vim.keymap.set('n', '<M-Up>', '[c', { remap = true })                                             -- Option+Up: Previous git change
+vim.keymap.set('n', '<M-Down>', ']c', { remap = true })                                           -- Option+Down: Next git change
 -- Editing (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true }) -- Cmd+/: Toggle comment
 vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })  -- Cmd+/: Toggle comment selection
@@ -309,13 +334,8 @@ require('lazy').setup({
     ---@type Gitsigns.Config
     ---@diagnostic disable-next-line: missing-fields
     opts = {
-      signs = {
-        add = { text = '+' }, ---@diagnostic disable-line: missing-fields
-        change = { text = '~' }, ---@diagnostic disable-line: missing-fields
-        delete = { text = '_' }, ---@diagnostic disable-line: missing-fields
-        topdelete = { text = '‾' }, ---@diagnostic disable-line: missing-fields
-        changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
-      },
+      current_line_blame = true,
+      word_diff = true,
     },
   },
 
@@ -990,7 +1010,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
