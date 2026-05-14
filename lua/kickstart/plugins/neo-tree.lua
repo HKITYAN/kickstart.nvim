@@ -31,7 +31,7 @@ return {
     })
   end,
   keys = {
-    { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
+    { '\\', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
   },
   ---@module 'neo-tree'
   ---@type neotree.Config
@@ -50,12 +50,16 @@ return {
         },
       },
       window = {
+        width = 30,
         mappings = {
           ['\\'] = 'close_window',
         },
       },
     },
     default_component_configs = {
+      file_size = { enabled = false },
+      last_modified = { enabled = false },
+      type = { enabled = false },
       git_status = {
         symbols = {
           modified  = '',

@@ -177,10 +177,29 @@ vim.o.laststatus = 3       -- Global statusline: one shared bar at the bottom fo
 vim.o.winbar = ' %t'       -- Winbar: file name at top of each pane
 -- Navigation (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<S-D-L>', '<cmd>vsplit<CR>')                                               -- Shift+Cmd+L: Vertical split
-vim.keymap.set('n', '<S-D-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })    -- Shift+Cmd+Left
-vim.keymap.set('n', '<S-D-Right>', '<C-w><C-l>', { desc = 'Move focus to the right window' })  -- Shift+Cmd+Right
-vim.keymap.set('n', '<D-Left>', '<cmd>BufferLineCyclePrev<CR>')                                  -- Cmd+Left: Previous tab
-vim.keymap.set('n', '<D-Right>', '<cmd>BufferLineCycleNext<CR>')                                 -- Cmd+Right: Next tab
+vim.keymap.set('n', '<D-1>', function()
+  if vim.bo.filetype == 'neo-tree' then
+    vim.cmd('wincmd p')
+  else
+    vim.cmd('Neotree focus')
+  end
+end)                                                                                               -- Cmd+1: Toggle focus neo-tree
+local function focus_window(dir)
+  local start = vim.api.nvim_get_current_win()
+  vim.cmd('wincmd ' .. dir)
+  if vim.bo.filetype == 'neo-tree' then
+    local on_neotree = vim.api.nvim_get_current_win()
+    vim.cmd('wincmd ' .. dir)
+    if vim.api.nvim_get_current_win() == on_neotree then
+      vim.api.nvim_set_current_win(start)
+    end
+  end
+end
+vim.keymap.set('n', '<S-D-[>', function() focus_window('h') end, { desc = 'Move focus to the left window' })  -- Shift+Cmd+[
+vim.keymap.set('n', '<S-D-]>', function() focus_window('l') end, { desc = 'Move focus to the right window' }) -- Shift+Cmd+]
+vim.keymap.set('n', '<D-[>', '<cmd>BufferLineCyclePrev<CR>')                                     -- Cmd+[: Previous tab
+vim.keymap.set('n', '<D-]>', '<cmd>BufferLineCycleNext<CR>')                                    -- Cmd+]: Next tab
+vim.keymap.set('n', '<leader>bc', function() require('mini.bufremove').delete() end, { desc = '[C]lose buffer' })
 vim.keymap.set('n', '<D-o>', '<cmd>Telescope lsp_workspace_symbols symbols=class<CR>')             -- Cmd+O: Go to class (workspace symbols)
 vim.keymap.set('n', '<S-D-O>', '<cmd>Telescope find_files<CR>')                                   -- Shift+Cmd+O: Search files by name
 vim.keymap.set('n', '<S-D-F>', '<cmd>Telescope live_grep<CR>')                                    -- Shift+Cmd+F: Search keywords in project (live grep)
@@ -190,16 +209,38 @@ vim.keymap.set('n', '<D-u>', 'gri', { remap = true })                           
 vim.keymap.set('n', '<S-D-I>', 'grd', { remap = true })                                          -- Shift+Cmd+I: Go to definition (same as grd)
 vim.keymap.set('n', '<S-C-Down>', '<cmd>Telescope lsp_document_symbols symbols=function,method<CR>')      -- Shift+Ctrl+Down: Document functions/methods — no iTerm2 mapping needed (standard terminal modifier)
 -- Git (gitsigns)
-vim.keymap.set('n', '<D-g>', function()                                                           -- Cmd+G: Toggle diff against last commit (iTerm2 Profile: remote-nvim)
+local function toggle_diff()
   if vim.wo.diff then
     vim.cmd('wincmd p | q')
   else
     require('gitsigns').diffthis('@')
   end
-end)
+end
+vim.keymap.set('n', '<leader>gd', toggle_diff, { desc = '[D]iff against last commit (toggle)' })   -- Space g d: Toggle diff against last commit
+vim.keymap.set('n', '<leader>gb', function()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == 'gitsigns-blame' then
+      vim.api.nvim_win_close(win, true)
+      return
+    end
+  end
+  vim.cmd('Gitsigns blame')
+end, { desc = '[B]lame file (toggle)' })
+vim.keymap.set('n', '<leader>gc', '<cmd>Telescope git_status<CR>', { desc = '[C]hanged files' })
 -- Git navigation (gitsigns) — no iTerm2 mapping needed (standard terminal modifier)
 vim.keymap.set('n', '<M-Up>', '[c', { remap = true })                                             -- Option+Up: Previous git change
 vim.keymap.set('n', '<M-Down>', ']c', { remap = true })                                           -- Option+Down: Next git change
+vim.keymap.set('n', '<M-Left>', vim.diagnostic.goto_prev)                                          -- Option+Left: Previous diagnostic
+vim.keymap.set('n', '<M-Right>', vim.diagnostic.goto_next)                                         -- Option+Right: Next diagnostic
+-- Quick close — no iTerm2 mapping needed (standard terminal modifier)
+vim.keymap.set('n', '<M-q>', function()
+  if vim.wo.diff then
+    vim.cmd('wincmd p | q')
+  else
+    vim.cmd('q')
+  end
+end)                                                                                               -- Option+Q: Smart close (diff aware)
 -- Editing (iTerm2 Profile: remote-nvim > Keys > Key Mappings)
 vim.keymap.set('n', '<M-[>/', 'gcc', { remap = true }) -- Cmd+/: Toggle comment
 vim.keymap.set('v', '<M-[>/', 'gc', { remap = true })  -- Cmd+/: Toggle comment selection
@@ -368,6 +409,8 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>b', group = '[B]uffer' },
+        { '<leader>g', group = '[G]it' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
         { 'gr', group = 'LSP Actions', mode = { 'n' } },
       },
@@ -907,14 +950,31 @@ require('lazy').setup({
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup {
+        use_icons = vim.g.have_nerd_font,
+        content = {
+          active = function()
+            local mode, mode_hl = statusline.section_mode({ trunc_width = 120 })
+            local git           = statusline.section_git({ trunc_width = 40, icon = '' })
+            local diagnostics   = statusline.section_diagnostics({ trunc_width = 75 })
+            local lsp           = statusline.section_lsp({ trunc_width = 75 })
+            local search        = statusline.section_searchcount({ trunc_width = 75 })
+            local filetype      = vim.bo.filetype
 
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function() return '%2l:%-2v' end
+            return statusline.combine_groups({
+              { hl = mode_hl,                  strings = { mode } },
+              { hl = 'MiniStatuslineDevinfo',  strings = { git, diagnostics, lsp } },
+              '%<',
+              { hl = 'MiniStatuslineFilename', strings = { '%f%m%r' } },
+              '%=',
+              { hl = 'MiniStatuslineFileinfo', strings = { filetype } },
+              { hl = mode_hl,                  strings = { search, '%2l:%-2v' } },
+            })
+          end,
+        },
+      }
+
+      require('mini.bufremove').setup()
 
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
@@ -1011,6 +1071,16 @@ require('lazy').setup({
   -- require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
+
+  -- [J] Session management: auto-save/restore open buffers per directory
+  {
+    'rmagatti/auto-session',
+    lazy = false,
+    opts = {
+      suppressed_dirs = { '~/', '~/Desktop', '~/Downloads', '/' },
+      pre_save_cmds = { 'Neotree close' },
+    },
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
