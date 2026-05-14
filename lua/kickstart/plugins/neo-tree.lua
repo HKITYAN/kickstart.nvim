@@ -33,6 +33,12 @@ return {
   keys = {
     { '\\', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
   },
+  config = function(_, opts)
+    require('neo-tree').setup(opts)
+    vim.api.nvim_create_autocmd('VimEnter', {
+      callback = function() vim.cmd('Neotree show') end,
+    })
+  end,
   ---@module 'neo-tree'
   ---@type neotree.Config
   opts = {

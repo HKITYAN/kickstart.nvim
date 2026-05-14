@@ -199,7 +199,7 @@ vim.keymap.set('n', '<S-D-[>', function() focus_window('h') end, { desc = 'Move 
 vim.keymap.set('n', '<S-D-]>', function() focus_window('l') end, { desc = 'Move focus to the right window' }) -- Shift+Cmd+]
 vim.keymap.set('n', '<D-[>', '<cmd>BufferLineCyclePrev<CR>')                                     -- Cmd+[: Previous tab
 vim.keymap.set('n', '<D-]>', '<cmd>BufferLineCycleNext<CR>')                                    -- Cmd+]: Next tab
-vim.keymap.set('n', '<leader>bc', function() require('mini.bufremove').delete() end, { desc = '[C]lose buffer' })
+vim.keymap.set('n', '<D-w>', function() require('mini.bufremove').delete() end)                    -- Cmd+W: Close current buffer
 vim.keymap.set('n', '<D-o>', '<cmd>Telescope lsp_workspace_symbols symbols=class<CR>')             -- Cmd+O: Go to class (workspace symbols)
 vim.keymap.set('n', '<S-D-O>', '<cmd>Telescope find_files<CR>')                                   -- Shift+Cmd+O: Search files by name
 vim.keymap.set('n', '<S-D-F>', '<cmd>Telescope live_grep<CR>')                                    -- Shift+Cmd+F: Search keywords in project (live grep)
