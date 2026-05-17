@@ -238,6 +238,8 @@ vim.keymap.set('n', '<M-Up>', '[c', { remap = true })                           
 vim.keymap.set('n', '<M-Down>', ']c', { remap = true })                                           -- Option+Down: Next git change
 vim.keymap.set('n', '<M-Left>', vim.diagnostic.goto_prev)                                          -- Option+Left: Previous diagnostic
 vim.keymap.set('n', '<M-Right>', vim.diagnostic.goto_next)                                         -- Option+Right: Next diagnostic
+vim.keymap.set('n', '<M-D-Left>', '<C-o>')                                                         -- Option+Cmd+Left: Jump back
+vim.keymap.set('n', '<M-D-Right>', '<C-i>')                                                        -- Option+Cmd+Right: Jump forward
 -- Quick close — no iTerm2 mapping needed (standard terminal modifier)
 vim.keymap.set('n', '<M-q>', function()
   if vim.wo.diff then
