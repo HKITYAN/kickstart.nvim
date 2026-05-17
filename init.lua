@@ -119,6 +119,9 @@ vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 -- Enable break indent
 vim.o.breakindent = true
 
+-- [J] Include globals in session (for winbar-bufferline persistence)
+vim.o.sessionoptions = vim.o.sessionoptions .. ',globals'
+
 -- Enable undo/redo changes even after closing and reopening a file
 vim.o.undofile = true
 
@@ -197,9 +200,11 @@ local function focus_window(dir)
 end
 vim.keymap.set('n', '<S-D-[>', function() focus_window('h') end, { desc = 'Move focus to the left window' })  -- Shift+Cmd+[
 vim.keymap.set('n', '<S-D-]>', function() focus_window('l') end, { desc = 'Move focus to the right window' }) -- Shift+Cmd+]
-vim.keymap.set('n', '<D-[>', '<cmd>BufferLineCyclePrev<CR>')                                     -- Cmd+[: Previous tab
-vim.keymap.set('n', '<D-]>', '<cmd>BufferLineCycleNext<CR>')                                    -- Cmd+]: Next tab
-vim.keymap.set('n', '<D-w>', function() require('mini.bufremove').delete() end)                    -- Cmd+W: Close current buffer
+local wb = require('custom.winbar-bufferline')
+wb.enable()
+vim.keymap.set('n', '<D-[>', function() wb.cycle(-1) end)                                        -- Cmd+[: Previous tab (per-window)
+vim.keymap.set('n', '<D-]>', function() wb.cycle(1) end)                                         -- Cmd+]: Next tab (per-window)
+vim.keymap.set('n', '<D-w>', wb.close_buf)                                                        -- Cmd+W: Close current buffer (per-window)
 vim.keymap.set('n', '<D-o>', '<cmd>Telescope lsp_workspace_symbols symbols=class<CR>')             -- Cmd+O: Go to class (workspace symbols)
 vim.keymap.set('n', '<S-D-O>', '<cmd>Telescope find_files<CR>')                                   -- Shift+Cmd+O: Search files by name
 vim.keymap.set('n', '<S-D-F>', '<cmd>Telescope live_grep<CR>')                                    -- Shift+Cmd+F: Search keywords in project (live grep)
@@ -238,8 +243,8 @@ vim.keymap.set('n', '<M-Up>', '[c', { remap = true })                           
 vim.keymap.set('n', '<M-Down>', ']c', { remap = true })                                           -- Option+Down: Next git change
 vim.keymap.set('n', '<M-Left>', vim.diagnostic.goto_prev)                                          -- Option+Left: Previous diagnostic
 vim.keymap.set('n', '<M-Right>', vim.diagnostic.goto_next)                                         -- Option+Right: Next diagnostic
-vim.keymap.set('n', '<M-D-Left>', '<C-o>')                                                         -- Option+Cmd+Left: Jump back
-vim.keymap.set('n', '<M-D-Right>', '<C-i>')                                                        -- Option+Cmd+Right: Jump forward
+vim.keymap.set('n', '<M-D-Left>', function() wb.jump_back() end)                                    -- Option+Cmd+Left: Jump back (cross-window)
+vim.keymap.set('n', '<M-D-Right>', function() wb.jump_forward() end)                               -- Option+Cmd+Right: Jump forward (cross-window)
 -- Quick close — no iTerm2 mapping needed (standard terminal modifier)
 vim.keymap.set('n', '<M-q>', function()
   if vim.wo.diff then
@@ -988,28 +993,6 @@ require('lazy').setup({
     end,
   },
 
-  -- [J] IDE-like tab bar
-  {
-    'akinsho/bufferline.nvim',
-    version = '*',
-    event = 'VimEnter',
-    opts = {
-      options = {
-        close_command = 'bdelete! %d',
-        diagnostics = 'nvim_lsp',
-        offsets = {
-          { filetype = 'neo-tree', text = '', separator = true },
-        },
-        show_close_icon = false,
-        custom_filter = function(buf)
-          return vim.fn.bufname(buf) ~= ''
-        end,
-        separator_style = 'thin',
-        modified_icon = '',
-      },
-    },
-  },
-
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     lazy = false,
@@ -1085,7 +1068,13 @@ require('lazy').setup({
     lazy = false,
     opts = {
       suppressed_dirs = { '~/', '~/Desktop', '~/Downloads', '/' },
-      pre_save_cmds = { 'Neotree close' },
+      pre_save_cmds = {
+        'Neotree close',
+        function() require('custom.winbar-bufferline').save() end,
+      },
+      post_restore_cmds = {
+        function() require('custom.winbar-bufferline').restore() end,
+      },
     },
   },
 
