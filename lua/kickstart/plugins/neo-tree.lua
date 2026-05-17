@@ -23,6 +23,7 @@ return {
       vim.api.nvim_set_hl(0, 'NeoTreeGitRenamed', { fg = '#e0af68' })   -- yellow: renamed
       vim.api.nvim_set_hl(0, 'NeoTreeGitDeleted', { fg = '#f7768e' })   -- red: deleted
       vim.api.nvim_set_hl(0, 'NeoTreeGitStaged', { fg = '#7aa2f7' })    -- blue: staged
+      vim.api.nvim_set_hl(0, 'NeoTreeCursorLine', { bg = '#2d4f67' })
     end
     set_neo_tree_git_colors()
     vim.api.nvim_create_autocmd('ColorScheme', {
