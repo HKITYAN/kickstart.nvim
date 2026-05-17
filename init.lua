@@ -228,6 +228,11 @@ vim.keymap.set('n', '<leader>gb', function()
   vim.cmd('Gitsigns blame')
 end, { desc = '[B]lame file (toggle)' })
 vim.keymap.set('n', '<leader>gc', '<cmd>Telescope git_status<CR>', { desc = '[C]hanged files' })
+vim.keymap.set('n', '<leader>gl', '<cmd>Telescope git_commits<CR>', { desc = '[L]og (all commits)' })
+vim.keymap.set('n', '<leader>gf', '<cmd>Telescope git_bcommits<CR>', { desc = '[F]ile history' })
+-- Open directories (Telescope)
+vim.keymap.set('n', '<leader>oa', function() require('telescope.builtin').find_files({ cwd = '~/.config' }) end, { desc = '~/.config' })
+
 -- Git navigation (gitsigns) — no iTerm2 mapping needed (standard terminal modifier)
 vim.keymap.set('n', '<M-Up>', '[c', { remap = true })                                             -- Option+Up: Previous git change
 vim.keymap.set('n', '<M-Down>', ']c', { remap = true })                                           -- Option+Down: Next git change
@@ -409,7 +414,8 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
         { '<leader>t', group = '[T]oggle' },
-{ '<leader>g', group = '[G]it' },
+        { '<leader>o', group = '[O]pen directory' },  -- [J]
+        { '<leader>g', group = '[G]it' },               -- [J]
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
         { 'gr', group = 'LSP Actions', mode = { 'n' } },
       },
